@@ -11,8 +11,17 @@
 ##
 #############################################################################
 
+# Usage
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# This tool can be run directly from github using the following syntax:
+#    bash <(curl -s https://raw.github.com/jocisco/ml/master/ml_debug) print 
+#    bash <(curl -s https://raw.github.com/jocisco/ml/master/ml_debug) tar 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 # Parameters
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 NUMBER_OF_LOG_LINES=10000 # number of lines captured from log files
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [ -z $CARIDEN_ROOT ] && CARIDEN_ROOT="-undefined-"
 
@@ -140,10 +149,10 @@ fi
 # Build the tar file
 if [ "$1" = "tar" ]; then 
 	cp $MLDB/mldb $TMPDIR
-	tail -$NUMBER_OF_LOG_LINES $MLDB/mld.log > $TMPDIR/last-10k-lines-mldb.log
+	tail -$NUMBER_OF_LOG_LINES $MLDB/mld.log > $TMPDIR/last-$NUMBER_OF_LOG_LINES-lines-mldb.log
 	mkdir -p $TMPDIR/tomcat/logs
 	for file in `ls $PACKAGE_DIR/lib/web/apache-tomcat-6.0.35/logs/*`; do
-		tail -$NUMBER_OF_LOG_LINES $file > $TMPDIR/tomcat/logs/last-10k-lines-`basename $file`
+		tail -$NUMBER_OF_LOG_LINES $file > $TMPDIR/tomcat/logs/last-$NUMBER_OF_LOG_LINES-lines-`basename $file`
 	done
 	mkdir -p $TMPDIR/tomcat/conf
 	cp -r $PACKAGE_DIR/lib/web/apache-tomcat-6.0.35/conf/* $TMPDIR/tomcat/conf
