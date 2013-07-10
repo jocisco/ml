@@ -7,38 +7,46 @@
 ## History:
 ## - 0.1 JG 04/18/2013: Initial version (MATE 5.3.3)
 ## - 0.2 JG 04/18/2013: Added mld debug
+## - 0.2 JG 07/10/2013: Improved conf parameters discovery + commments
 ##
 #############################################################################
 
-#############################################################################
-# CHECK IF THIS IS VALID
-#############################################################################
+# Parameters
+NUMBER_OF_LOG_LINES=10000 # number of lines captured from log files
 
-CONF_DIR=`license_check 2>&1 | grep lic | sed -e 's/.*: \(.*\/etc\)\(.*\).lic/\1/'`
-CARIDEN_ROOT=`which license_check | sed 's/\(.*\)\/software\/mate\/current\/bin\/license_check/\1/'`
+[ -z $CARIDEN_ROOT ] && CARIDEN_ROOT="-undefined-"
 
-#############################################################################
+# Determining package location
+PACKAGE_DIR=`which license_check | sed 's/\(.*\)\/bin\/license_check/\1/'`
 
-MLCONF=$CONF_DIR/matelive/ml.conf
-MLDATA=`cat $MLCONF | grep -v '^#' | grep MLData= | sed s,MLData=,,`
+# function that returns the path to a particular MATE config file
+function mate_path {
+        for path in "$CARIDEN_ROOT" "$HOME/.cariden" "$PACKAGE_DIR" ;
+        do
+                [ -f $path/$1 ] && { echo "$path/$1"; break; }
+        done
+}
+
+# Determining ml.conf location
+MLCONF=`mate_path etc/matelive/ml.conf`
+
+# Determining MLData and Datastore locations
+MLDATA=`cat $MLCONF | grep -v '^#' | grep MLData= | cut -f2 -d'='`
 MLDB=`cat $MLCONF | grep -v '^#' | grep Datastore= | cut -f2 -d'='`
-if [[ ! $MLDB ]]; then
+if [[ ! $MLDB && $MLDATA ]]; then
 	MLDB=$MLDATA/datastore
 fi
 
+# Printing discovered params
 echo "---------- Discovered Parameters ----------"
-printf "%-15s = %s\n" "CARIDEN_ROOT" $CARIDEN_ROOT
-printf "%-15s = %s\n" "CONFIG_DIR" $CONF_DIR
+printf "%-15s = %s %s\n" "CARIDEN_ROOT" $CARIDEN_ROOT
+printf "%-15s = %s %s\n" "PACKAGE_DIR" $PACKAGE_DIR
+printf "%-15s = %s\n" "ml.conf" $MLCONF
 printf "%-15s = %s\n" "MLDATA" $MLDATA
 printf "%-15s = %s\n" "MLDB" $MLDB
 echo "-------------------------------------------"
 
-if [[ ! $CARIDEN_ROOT ]] || [[ ! $CONF_DIR ]] || [[ ! $MLDATA ]]; then
-	echo Invalid environment!
-	exit 1
-fi
-
-
+# Printing usage if no arguments
 if [[ "$1" != "tar" ]] && [[ "$1" != "print" ]]; then
 	echo Usage: 
 	echo "   ml_debug print : print some debug info"
@@ -46,16 +54,21 @@ if [[ "$1" != "tar" ]] && [[ "$1" != "print" ]]; then
 	exit
 fi
 
-# DEBUG COMMANDS
+# Exiting if not able to determine env
+if [[ ! $PACKAGE_DIR ]] || [[ ! $MLCONF ]] || [[ ! $MLDATA ]]; then
+	echo Invalid environment!
+	exit 1
+fi
 
 IFS=$'\n'
 
+# List of debug commands to run
 COMMANDS_WITH_COMMENTS="
 ### MATE ###
-$CARIDEN_ROOT/software/mate/current/bin/license_check -version
+$PACKAGE_DIR/bin/license_check -version
 echo MLDATA=$MLDATA
 echo MLDB=$MLDB
-$CARIDEN_ROOT/software/mate/current/bin/license_check 
+$PACKAGE_DIR/bin/license_check 
 
 ### System ###
 uname -a
@@ -84,22 +97,21 @@ time ml_read sql 'select * from Interfaces_Series' 2>&1 | head
 
 #### Logs ###
 cat /opt/cariden/.cariden/etc/matelive/ml.conf | grep -v '^#' | grep -v ^$
-tail -n1000 $CARIDEN_ROOT/software/mate/current/lib/web/apache-tomcat-6.0.35/logs/*
+tail -n1000 $PACKAGE_DIR/lib/web/apache-tomcat-6.0.35/logs/*
 tail -n1000 $MLDB/mld.log
 "
 
+# Trimming comments
 COMMANDS="`echo "$COMMANDS_WITH_COMMENTS" | grep -v '^#' | grep -v ^$`"
-#echo "$COMMANDS";exit
-i=1
 
 # Create TMPDIR
 DATE=`date --utc +%Y%m%d-%H%M` 
 HOSTNAME=`hostname`
 TMPDIR=`mktemp -d /tmp/ml_debug-$HOSTNAME-$DATE-XXX` 
-
 touch $TMPDIR/debug
-# Display commands to be executed
 
+# Display commands to be executed
+i=1
 echo '*****************************************************' >> $TMPDIR/debug 2>&1
 echo '* Commands in this output:                          *' >> $TMPDIR/debug 2>&1
 echo '*****************************************************' >> $TMPDIR/debug 2>&1
@@ -110,7 +122,6 @@ done
 echo '*****************************************************' >> $TMPDIR/debug 2>&1
 
 # Execute commands
-
 i=1
 for command in $COMMANDS; do
 	echo ----------------------------------------------------- >> $TMPDIR/debug 2>&1
@@ -121,22 +132,21 @@ for command in $COMMANDS; do
 	echo >> $TMPDIR/debug 2>&1
 	i=$((i+1))
 done
+# Print result
 if [ "$1" != "tar" ]; then
 	cat $TMPDIR/debug
 fi
 
-NUMBER_OF_LOG_LINES=10000
-
+# Build the tar file
 if [ "$1" = "tar" ]; then 
 	cp $MLDB/mldb $TMPDIR
 	tail -$NUMBER_OF_LOG_LINES $MLDB/mld.log > $TMPDIR/last-10k-lines-mldb.log
 	mkdir -p $TMPDIR/tomcat/logs
-#	cp $CARIDEN_ROOT/software/mate/current/lib/web/apache-tomcat-6.0.35/logs/* $TMPDIR/tomcat/logs
-	for file in `ls $CARIDEN_ROOT/software/mate/current/lib/web/apache-tomcat-6.0.35/logs/*`; do
+	for file in `ls $PACKAGE_DIR/lib/web/apache-tomcat-6.0.35/logs/*`; do
 		tail -$NUMBER_OF_LOG_LINES $file > $TMPDIR/tomcat/logs/last-10k-lines-`basename $file`
 	done
 	mkdir -p $TMPDIR/tomcat/conf
-	cp -r $CARIDEN_ROOT/software/mate/current/lib/web/apache-tomcat-6.0.35/conf/* $TMPDIR/tomcat/conf
+	cp -r $PACKAGE_DIR/lib/web/apache-tomcat-6.0.35/conf/* $TMPDIR/tomcat/conf
 
 	echo -n "Creating $TMPDIR.tgz... "
 	tar cvzf $TMPDIR.tgz -C /tmp/ `basename $TMPDIR` >/dev/null 2>&1
@@ -147,4 +157,6 @@ if [ "$1" = "tar" ]; then
 		echo Error!
 	fi
 fi
+
+# Clean tmp files
 rm -rf $TMPDIR
