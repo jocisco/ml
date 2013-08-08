@@ -23,49 +23,64 @@
 NUMBER_OF_LOG_LINES=10000 # number of lines captured from log files
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Check if $CARIDEN_ROOT is defined
 [ -z $CARIDEN_ROOT ] && CARIDEN_ROOT="-undefined-"
 
 # Determining package location
 PACKAGE_DIR=`which license_check | sed 's/\(.*\)\/bin\/license_check/\1/'`
 
-# function that returns the path to a particular MATE config file
+# Returns the path to a particular MATE config file
+# Requires $CARIDEN_ROOT and $PACKAGE_DIR to be set
 function mate_path {
-        for path in "$CARIDEN_ROOT" "$HOME/.cariden" "$PACKAGE_DIR" ;
-        do
-                [ -f $path/$1 ] && { echo "$path/$1"; break; }
-        done
+	for path in "$CARIDEN_ROOT" "$HOME/.cariden" "$PACKAGE_DIR" ;
+	do
+		[ -f $path/$1 ] && { echo "$path/$1"; break; }
+	done
 }
 
-# Determining ml.conf location
-MLCONF=`mate_path etc/matelive/ml.conf`
+# Discover MATE environment
+function discover_mate_env {
+	# Determining ml.conf location
+	MLCONF=`mate_path etc/matelive/ml.conf`
 
-# Determining MLData and Datastore locations
-MLDATA=`cat $MLCONF | grep -v '^#' | grep MLData= | cut -f2 -d'='`
-MLDB=`cat $MLCONF | grep -v '^#' | grep Datastore= | cut -f2 -d'='`
-if [[ ! $MLDB && $MLDATA ]]; then
-	MLDB=$MLDATA/datastore
-fi
+	# Determining MLData and Datastore locations
+	MLDATA=`cat $MLCONF | grep -v '^#' | grep MLData= | cut -f2 -d'='`
+	MLDB=`cat $MLCONF | grep -v '^#' | grep Datastore= | cut -f2 -d'='`
+	if [[ ! $MLDB && $MLDATA ]]; then
+		MLDB=$MLDATA/datastore
+	fi
+}
 
-# Printing discovered params
-echo "---------- Discovered Parameters ----------"
-printf "%-15s = %s %s\n" "CARIDEN_ROOT" $CARIDEN_ROOT
-printf "%-15s = %s %s\n" "PACKAGE_DIR" $PACKAGE_DIR
-printf "%-15s = %s\n" "ml.conf" $MLCONF
-printf "%-15s = %s\n" "MLDATA" $MLDATA
-printf "%-15s = %s\n" "MLDB" $MLDB
-echo "-------------------------------------------"
+# Print discovered MATE environment
+function print_discovered_mate_env {
+	echo "---------- Discovered Parameters ----------"
+	printf "%-15s = %s %s\n" "CARIDEN_ROOT" $CARIDEN_ROOT
+	printf "%-15s = %s %s\n" "PACKAGE_DIR" $PACKAGE_DIR
+	printf "%-15s = %s\n" "ml.conf" $MLCONF
+	printf "%-15s = %s\n" "MLDATA" $MLDATA
+	printf "%-15s = %s\n" "MLDB" $MLDB
+	echo "-------------------------------------------"
+}
+
+# Discover MATE environment
+discover_mate_env
 
 # Printing usage if no arguments
 if [[ "$1" != "tar" ]] && [[ "$1" != "print" ]]; then
 	echo Usage: 
 	echo "   ml_debug print : print some debug info"
 	echo "   ml_debug tar   : create debug tarball"
+	echo
+	# Print discovered MATE environment
+	print_discovered_mate_env
 	exit
 fi
 
 # Exiting if not able to determine env
 if [[ ! $PACKAGE_DIR ]] || [[ ! $MLCONF ]] || [[ ! $MLDATA ]]; then
-	echo Invalid environment!
+	echo '### Invalid environment! ###'
+	echo
+	print_discovered_mate_env
 	exit 1
 fi
 
@@ -118,6 +133,9 @@ DATE=`date --utc +%Y%m%d-%H%M`
 HOSTNAME=`hostname`
 TMPDIR=`mktemp -d /tmp/ml_debug-$HOSTNAME-$DATE-XXX` 
 touch $TMPDIR/debug
+
+# Print discovered MATE environment
+print_discovered_mate_env >> $TMPDIR/debug 2>&1
 
 # Display commands to be executed
 i=1
