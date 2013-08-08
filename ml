@@ -23,8 +23,16 @@
 # Check if $CARIDEN_ROOT is defined
 [ -z $CARIDEN_ROOT ] && CARIDEN_ROOT="-undefined-"
 
+test_path=`which license_check &>/dev/null` 
+if [[ $? == 1 ]]; then
+	echo Please add MATE bin directory to your PATH.
+	echo "e.g.  export PATH=\"\$PATH:/opt/cariden/software/mate/current/bin\""                    
+	exit
+fi
+
 # Determining package location
-PACKAGE_DIR=`which license_check | sed 's/\(.*\)\/bin\/license_check/\1/'`
+PACKAGE_DIR=`echo $test_path | sed 's/\(.*\)\/bin\/license_check/\1/'`
+
 
 # Returns the path to a particular MATE config file
 # Requires $CARIDEN_ROOT and $PACKAGE_DIR to be set
