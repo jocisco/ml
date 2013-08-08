@@ -3,12 +3,6 @@
 #############################################################################
 ## Author:       Jonathan Garzon
 ## Description:  Gather ML debug info
-##
-## History:
-## - 0.1 JG 04/18/2013: Initial version (MATE 5.3.3)
-## - 0.2 JG 04/18/2013: Added mld debug
-## - 0.2 JG 07/10/2013: Improved conf parameters discovery + commments
-##
 #############################################################################
 
 # Usage
