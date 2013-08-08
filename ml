@@ -39,9 +39,7 @@ function mate_path {
 CONFIG_FILE=`mate_path /etc/matelive/ml.conf`
 
 if [[ ! -r $CONFIG_FILE ]]; then
-    echo ML Config file not found. This script assumes ml.conf to be placed in 
-    echo $HOME/.cariden/etc/matelive/
-    echo \$CONFIG_FILE is currently set to: $CONFIG_FILE
+    echo ML Config file not found.
     exit;
 fi
 
