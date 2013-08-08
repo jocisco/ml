@@ -20,8 +20,23 @@
 #Source the env var's:
 #. $HOME/.bash_profile
 
+# Check if $CARIDEN_ROOT is defined
+[ -z $CARIDEN_ROOT ] && CARIDEN_ROOT="-undefined-"
+
+# Determining package location
+PACKAGE_DIR=`which license_check | sed 's/\(.*\)\/bin\/license_check/\1/'`
+
+# Returns the path to a particular MATE config file
+# Requires $CARIDEN_ROOT and $PACKAGE_DIR to be set
+function mate_path {
+        for path in "$CARIDEN_ROOT" "$HOME/.cariden" "$PACKAGE_DIR" ;
+        do
+                [ -f $path/$1 ] && { echo "$path/$1"; break; }
+        done
+}
+
 # Variables to be set. Modified as required:
-CONFIG_FILE=$HOME/.cariden/etc/matelive/ml.conf
+CONFIG_FILE=`mate_path /etc/matelive/ml.conf`
 
 if [[ ! -r $CONFIG_FILE ]]; then
     echo ML Config file not found. This script assumes ml.conf to be placed in 
