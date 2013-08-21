@@ -1,9 +1,11 @@
 #!/bin/bash
-############# <MATE stuff> ############# 
 
-export CARIDEN_ROOT=/opt/cariden
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Source this file in your bashrc
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[[ $CARIDEN_ROOT ]] || export CARIDEN_ROOT=/opt/cariden
 export CARIDEN_HOME=${CARIDEN_ROOT}/software/mate/current
-
 PATH=$PATH:${CARIDEN_ROOT}/bin
 PATH=$PATH:${CARIDEN_HOME}/bin
 
