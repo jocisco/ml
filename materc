@@ -9,7 +9,7 @@ export CARIDEN_HOME=${CARIDEN_ROOT}/software/mate/current
 PATH=$PATH:${CARIDEN_ROOT}/bin
 PATH=$PATH:${CARIDEN_HOME}/bin
 
-# Discovering MATE Live params
+# Find MATE config file
 function mate_path {
         for path in "$CARIDEN_ROOT" "$HOME/.cariden/" "$CARIDEN_HOME" ;
         do
@@ -17,14 +17,19 @@ function mate_path {
         done
 }
 
+# Read ml.conf param value
 function mlconf_value {
 	echo `cat $MLCONF | grep $1= | cut -f2 -d'='`
 }
 
-MLCONF=`mate_path etc/matelive/ml.conf`
-MLData=`mlconf_value MLData`
-MLDB=`mlconf_value Datastore`
-[[ $MLDB ]] || MLDB=$MLData/datastore
+# Discover ML config
+function mlconf_params {
+	MLCONF=`mate_path etc/matelive/ml.conf`
+	MLData=`mlconf_value MLData`
+	MLDB=`mlconf_value Datastore`; [[ $MLDB ]] || MLDB=$MLData/datastore
+}
+
+mlconf_params
 
 export MLDATA
 export MLDB
