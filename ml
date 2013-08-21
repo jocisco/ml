@@ -33,7 +33,6 @@ fi
 # Determining package location
 PACKAGE_DIR=`echo $test_path | sed 's/\(.*\)\/bin\/license_check/\1/'`
 
-
 # Returns the path to a particular MATE config file
 # Requires $CARIDEN_ROOT and $PACKAGE_DIR to be set
 function mate_path {
@@ -130,7 +129,7 @@ matelive_start() {
         echo "*** starting web server ***"
         $CARIDEN_HOME/bin/embedded_web_server -action start -verbosity 40
     fi
-    /opt/cariden/Cariden/bin/ml status
+    matelive_status
 }
 
 usage() {

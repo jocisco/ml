@@ -1,0 +1,36 @@
+#!/bin/bash
+############# <MATE stuff> ############# 
+
+export CARIDEN_ROOT=/opt/cariden
+export CARIDEN_HOME=${CARIDEN_ROOT}/software/mate/current
+
+PATH=$PATH:${CARIDEN_ROOT}/bin
+PATH=$PATH:${CARIDEN_HOME}/bin
+
+# Define $MLCONF, $MLDB
+function mate_path {
+        for path in "$CARIDEN_ROOT" "$HOME/.cariden/" "$CARIDEN_HOME" ;
+        do
+                [ -f $path/$1 ] && { echo "$path/$1"; break; }
+        done
+}
+
+MLCONF=`mate_path etc/matelive/ml.conf`
+MLDB=`cat $MLCONF | grep Datastore= | cut -f2 -d'='`
+if [[ ! $MLDB ]]; then
+	MLDB=`cat $MLCONF | grep MLData= | cut -f2 -d'='`/datastore
+fi
+MLData=`cat $MLCONF | grep MLData= | sed s,MLData=,,`
+
+export MLDATA
+export MLDB
+export MLCONF
+
+alias mate='cd $CARIDEN_HOME'
+alias l='cd $CARIDEN_HOME/lib/web/apache-tomcat-6.0.35/logs/'
+alias logs='tail -f $CARIDEN_HOME/lib/web/apache-tomcat-6.0.35/logs/*log' 
+alias webapps='cd $CARIDEN_HOME/lib/web/apache-tomcat-6.0.35/webapps/'
+alias mls='ml status'
+alias c='cd `dirname $MLCONF`'
+
+############# </MATE stuff> ############# 
