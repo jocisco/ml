@@ -36,9 +36,9 @@ export MLDB
 export MLCONF
 
 alias mate='cd $CARIDEN_HOME'
-alias l='cd $CARIDEN_HOME/lib/web/apache-tomcat-6.0.35/logs/'
-alias logs='tail -f $CARIDEN_HOME/lib/web/apache-tomcat-6.0.35/logs/*log' 
-alias webapps='cd $CARIDEN_HOME/lib/web/apache-tomcat-6.0.35/webapps/'
+alias l='cd $CARIDEN_HOME/lib/web/apache-tomcat-*/logs/'
+alias logs='tail -f $CARIDEN_HOME/lib/web/apache-tomcat-*/logs/*log' 
+alias webapps='cd $CARIDEN_HOME/lib/web/apache-tomcat-*/webapps/'
 alias mls='ml status'
 alias c='cd `dirname $MLCONF`'
 
