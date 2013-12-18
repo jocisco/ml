@@ -26,7 +26,7 @@ PACKAGE_DIR=`which license_check | sed 's/\(.*\)\/bin\/license_check/\1/'`
 # Returns the path to a particular MATE config file
 # Requires $CARIDEN_ROOT and $PACKAGE_DIR to be set
 function mate_path {
-	for path in "$CARIDEN_ROOT" "$HOME/.cariden" "$PACKAGE_DIR" ;
+	for path in "$HOME/.cariden" "$CARIDEN_ROOT" "$PACKAGE_DIR" ;
 	do
 		[ -f $path/$1 ] && { echo "$path/$1"; break; }
 	done
@@ -114,6 +114,7 @@ for table in \`ml_read -datastore $MLDB tables\`; do c=\`ml_read -datastore $MLD
 time ml_read sql 'select * from Interfaces_Series' 2>&1 | head
 
 #### Logs ###
+cat $MLCONF | grep -v '^#' | grep -v ^$
 cat /opt/cariden/.cariden/etc/matelive/ml.conf | grep -v '^#' | grep -v ^$
 tail -n1000 $PACKAGE_DIR/lib/web/apache-tomcat-6.0.35/logs/*
 tail -n1000 $MLDB/mld.log
