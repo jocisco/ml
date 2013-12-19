@@ -111,7 +111,7 @@ ml_read -datastore $MLDB sql \"select datetime(MIN(CreationTimestamp)/1000,'unix
 # Tables size
 for table in \`ml_read -datastore $MLDB tables\`; do c=\`ml_read -datastore $MLDB sql \"select count(*) from \$table;\" | tail -n1\`; printf \"%-30s%10d\\n\" \$table \$c; done
 # Time to load the interfaces table with last value of time series
-time ml_read sql 'select * from Interfaces_Series' 2>&1 | head
+time ml_read sql 'select * from Interfaces_Series' 2>&1 | head -500
 
 #### Logs ###
 cat $MLCONF | grep -v '^#' | grep -v ^$
